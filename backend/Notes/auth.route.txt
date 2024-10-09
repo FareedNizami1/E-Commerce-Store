@@ -1,0 +1,76 @@
+Workflow Overview
+User Signup (signup function):
+    Purpose: Register a new user.
+        Steps:
+            Extract email, password, and name from the request body.
+            Check if a user with the given email already exists.
+            If the user exists, return a 400 status with an error message.
+            If the user does not exist, create a new user in the database.
+            Generate access and refresh tokens for the new user.
+            Store the refresh token in Redis.
+            Set the access and refresh tokens as HTTP-only cookies.
+            Return the user details in the response with a 201 status.
+
+
+User Login (login function):
+    Purpose: Authenticate an existing user.
+        Steps:
+            Extract email and password from the request body.
+            Find the user by email.
+            If the user is found and the password matches, generate access and refresh tokens.
+            Store the refresh token in Redis.
+            Set the access and refresh tokens as HTTP-only cookies.
+            Return the user details in the response.
+            If the email or password is incorrect, return a 400 status with an error message.
+
+
+User Logout (logout function):
+    Purpose: Log out the user by invalidating the refresh token.
+        Steps:
+            Extract the refresh token from the cookies.
+            Verify the refresh token.
+            If the token is valid, delete it from Redis.
+            Clear the access and refresh token cookies.
+            Return a success message.
+
+
+Refresh Access Token (refreshToken function):
+    Purpose: Refresh the access token using a valid refresh token.
+        Steps:
+            Extract the refresh token from the cookies.
+            Verify the refresh token.
+            Check if the refresh token matches the one stored in Redis.
+            If the token is valid, generate a new access token.
+            Set the new access token as an HTTP-only cookie.
+            Return a success message.
+            If the token is invalid, return a 401 status with an error message.
+
+
+Get User Profile (getProfile function):
+    Purpose: Retrieve the authenticated user's profile.
+        Steps:
+        Return the user details from the request object.
+        If an error occurs, return a 500 status with an error message.
+        
+        
+Supporting Functions
+    generateTokens:
+        Generates an access token (valid for 15 minutes) and a refresh token (valid for 7 days) for a given user ID.
+
+    storeRefreshToken:
+        Stores the refresh token in Redis with an expiration time of 7 days.
+
+    setCookies:
+        Sets the access and refresh tokens as HTTP-only cookies with appropriate security settings.
+
+
+Why We Are Doing It
+Security: Using JWTs for authentication ensures that user sessions are stateless and secure. The use of HTTP-only cookies helps prevent XSS attacks, and the sameSite attribute helps prevent CSRF attacks.
+Scalability: Storing refresh tokens in Redis allows for scalable session management, as Redis is a fast, in-memory data store.
+User Experience: The refresh token mechanism allows users to stay logged in for longer periods without needing to re-authenticate frequently, improving the user experience.
+
+What We Are Doing
+User Registration and Authentication: We are handling user signup, login, and logout processes.
+Token Management: We are generating, storing, and refreshing JWTs to manage user sessions securely.
+Profile Retrieval: We are providing an endpoint to retrieve the authenticated user's profile information.
+By following this workflow, we ensure a secure and efficient authentication system for our application.
